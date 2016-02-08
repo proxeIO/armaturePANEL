@@ -133,14 +133,10 @@ class POSE_OT_custom_shape_to_bone(Operator):
       # show wire
       if customShapeToBone.showWire:
         activeBone.show_wire = True
-      else:
-        pass
 
       # wire draw type
       if customShapeToBone.wireDrawType:
         customShape.draw_type = 'WIRE'
-      else:
-        pass
 
       # name custom shape
       if customShapeToBone.nameCustomShape:
@@ -149,8 +145,6 @@ class POSE_OT_custom_shape_to_bone(Operator):
         # add armature name
         if customShapeToBone.addArmatureName:
          customShapeName = activeArmature.name + customShapeToBone.separateName + customShapeName
-        else:
-          pass
 
         # assign name
         customShape.name = customShapeToBone.prefixShapeName + customShapeName
@@ -160,8 +154,6 @@ class POSE_OT_custom_shape_to_bone(Operator):
           customShape.data.name = customShapeToBone.prefixShapeName + customShapeName
         else:
           customShape.data.name = customShapeName
-      else:
-        pass
 
     # exception
     except (AttributeError, KeyError, TypeError):
