@@ -27,14 +27,12 @@
 # blender info
 bl_info = {
   'name': 'Armature Data Panel',
-  'author': 'proxe',
+  'author': 'Trentin Frederick (proxe)',
   'version': (0, 0, 8),
-  'blender': (2, 66, 0),
-  'location': '3D View > Properties Panel',
-  'warning': 'Work in Progress',
-  #'wiki_url': '',
-  #'tracker_url': '',
+  'blender': (2, 76, 0),
+  'location': '3D View → Properties Panel → Armature',
   'description': 'Quickly access many of the most commonly used armature options within the 3D View',
+  'tracker_url': 'https://github.com/trentinfrederick/armature-data-panel/issues',
   'category': 'Rigging'
 }
 
@@ -256,7 +254,7 @@ class VIEW3D_PT_armature_data(Panel):  # TODO: Account for linked armatures.
   '''
   bl_space_type = 'VIEW_3D'
   bl_region_type = 'UI'
-  bl_label = 'Armature Data'
+  bl_label = 'Armature'
 
   # class method
   @classmethod
