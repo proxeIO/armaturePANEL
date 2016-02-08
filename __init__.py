@@ -1,18 +1,19 @@
+
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
-#  This program is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU General Public License
-#  as published by the Free Software Foundation; either version 2
-#  of the License, or (at your option) any later version.
+#  This program is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License as published by the Free
+#  Software Foundation; either version 2 of the License, or (at your option)
+#  any later version.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
+#  This program is distributed in the hope that it will be useful, but WITHOUT
+#  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+#  more details.
 #
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software Foundation,
-#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#  You should have received a copy of the GNU General Public License along with
+#  this program; if not, write to the Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 # ##### END GPL LICENSE BLOCK #####
 
@@ -31,7 +32,7 @@ bl_info = {
   'version': (0, 0, 8),
   'blender': (2, 76, 0),
   'location': '3D View → Properties Panel → Armature',
-  'description': 'Quickly access many of the most commonly used armature options within the 3D View',
+  'description': 'Custom bone shape alignment and shortcut panel.',
   'tracker_url': 'https://github.com/trentinfrederick/armature-data-panel/issues',
   'category': 'Rigging'
 }
@@ -43,7 +44,7 @@ from mathutils import Matrix
 from bpy.types import PropertyGroup, Panel
 from bpy.props import *
 
-# Custom Shape to Bone (OT)
+# custom shape to bone
 class POSE_OT_custom_shape_to_bone(Operator):
   '''
     Align currently assigned custom bone shape on a visible scene layer to active pose bone.
@@ -53,6 +54,7 @@ class POSE_OT_custom_shape_to_bone(Operator):
   bl_description = 'Align currently assigned custom bone shape on a visible scene layer to this bone.'
   bl_options = {'REGISTER', 'UNDO'}
 
+  # poll
   @classmethod
   def poll(cls, context):
     '''
@@ -61,6 +63,7 @@ class POSE_OT_custom_shape_to_bone(Operator):
     return context.active_bone
     return context.mode in 'POSE'
 
+  # execute
   def execute(self, context):
     '''
       Execute the operator.
@@ -68,8 +71,6 @@ class POSE_OT_custom_shape_to_bone(Operator):
 
     # use global undo
     useGlobalUndo = context.user_preferences.edit.use_global_undo
-
-    # try
     try:
 
       # use global undo
@@ -152,8 +153,6 @@ class POSE_OT_custom_shape_to_bone(Operator):
           customShape.data.name = customShapeToBone.prefixShapeName + customShapeName
         else:
           customShape.data.name = customShapeName
-
-    # exception
     except (AttributeError, KeyError, TypeError):
 
       # report
@@ -165,7 +164,7 @@ class POSE_OT_custom_shape_to_bone(Operator):
 
     return {'FINISHED'}
 
-# Armature Data PropertyGroup
+# armature data property group
 class armatureData(PropertyGroup):
   '''
     Armature Data Panel property group
@@ -192,7 +191,7 @@ class armatureData(PropertyGroup):
     default = False
   )
 
-# custom shape to bone
+# custom shape to bone property group
 class customShapeToBone(PropertyGroup):
   '''
     Custom Shape to Bone property group.
@@ -247,16 +246,16 @@ class customShapeToBone(PropertyGroup):
     default='_'
   )
 
-# Armature Data (PT)
+# armature data
 class VIEW3D_PT_armature_data(Panel):  # TODO: Account for linked armatures.
   '''
-    Armatur Data Panel.
+    Armature data panel.
   '''
   bl_space_type = 'VIEW_3D'
   bl_region_type = 'UI'
   bl_label = 'Armature'
 
-  # class method
+  # poll
   @classmethod
   def poll(cls, context):
     '''
