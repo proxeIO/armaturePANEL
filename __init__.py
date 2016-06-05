@@ -19,9 +19,9 @@
 
 # ##### BEGIN INFO BLOCK #####
 #
-#    Author: Trentin Frederick (a.k.a, proxe)
-#    Contact: trentin.shaun.frederick@gmail.com
-#    Version: 0.0.8
+#  Author: Trentin Frederick (a.k.a, proxe)
+#  Contact: trentin.shaun.frederick@gmail.com
+#  Version: 0.0.8
 #
 # ##### END INFO BLOCK #####
 
@@ -30,7 +30,7 @@ bl_info = {
   'name': 'Armature Panel',
   'author': 'Trentin Frederick (proxe)',
   'version': (0, 0, 8),
-  'blender': (2, 76, 0),
+  'blender': (2, 5, 0),
   'location': '3D View → Properties Panel → Armature',
   'description': 'Custom bone shape alignment and shortcut panel.',
   'tracker_url': 'https://github.com/trentinfrederick/armature-data-panel/issues',
@@ -263,7 +263,7 @@ class VIEW3D_PT_armature_data(Panel):  # TODO: Account for linked armatures.
     '''
 
     # context mode in pose or edit
-    return context.mode in {'POSE', 'EDIT_ARMATURE'}
+    return context.mode in {'POSE', 'EDIT_ARMATURE'} and context.active_bone
 
   # draw header
   def draw_header(self, context):
@@ -304,11 +304,12 @@ class VIEW3D_PT_armature_data(Panel):  # TODO: Account for linked armatures.
     # active bone
     activeBone = context.active_bone
 
-    # active pose bone
-    activePoseBone = activeArmature.pose.bones[activeBone.name]
 
     # pose mode
     if context.mode in 'POSE':
+
+      # active pose bone
+      activePoseBone = activeArmature.data.bones[activeBone.name]
 
       # row
       row = column.row(align=True)
@@ -318,6 +319,9 @@ class VIEW3D_PT_armature_data(Panel):  # TODO: Account for linked armatures.
 
       # column
       column = layout.column(align=True)
+
+    else:
+      activePoseBone = activeArmature.data.edit_bones[activeBone.name]
 
     # layers
     column.prop(activeArmature.data, 'layers', text='')
@@ -428,7 +432,7 @@ class VIEW3D_PT_armature_data(Panel):  # TODO: Account for linked armatures.
         row = column.row(align=True)
 
         # bone group search
-        row.prop_search(activePoseBone, 'bone_group', activeArmature.pose, 'bone_groups', text='')
+        row.prop_search(bpy.data.objects[activeArmature.name].pose.bones[activePoseBone.name], 'bone_group', activeArmature.pose, 'bone_groups', text='')
 
       # column
       column = layout.column(align=True)
@@ -531,16 +535,16 @@ class VIEW3D_PT_armature_data(Panel):  # TODO: Account for linked armatures.
         row.label(text='', icon='BLANK1')
 
         # custom shape
-        row.prop(activePoseBone, 'custom_shape', text='')
+        row.prop(bpy.data.objects[activeArmature.name].pose.bones[activePoseBone.name], 'custom_shape', text='')
 
         # row
         row = column.row(align=True)
 
         # custom shape transform
-        row.prop_search(activePoseBone, 'custom_shape_transform', activeArmature.pose, 'bones', text='')
+        row.prop_search(bpy.data.objects[activeArmature.name].pose.bones[activePoseBone.name], 'custom_shape_transform', activeArmature.pose, 'bones', text='')
 
         # custom shape
-        if activePoseBone.custom_shape:
+        if bpy.data.objects[activeArmature.name].pose.bones[activePoseBone.name].custom_shape:
 
           # row
           row = column.row(align=True)
