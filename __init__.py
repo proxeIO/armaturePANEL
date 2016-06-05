@@ -29,7 +29,7 @@
 bl_info = {
   'name': 'Armature Panel',
   'author': 'Trentin Frederick (proxe)',
-  'version': (0, 0, 8),
+  'version': (0, 0, 9),
   'blender': (2, 5, 0),
   'location': '3D View → Properties Panel → Armature',
   'description': 'Custom bone shape alignment and shortcut panel.',
@@ -170,7 +170,6 @@ class POSE_OT_custom_shape_to_bone(Operator):
     '''
       Execute the operator.
     '''
-
 
     # custom shape
     if context.active_pose_bone.custom_shape:
