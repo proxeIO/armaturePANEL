@@ -110,7 +110,7 @@ class POSE_OT_custom_shape_to_bone(Operator):
     try:
 
       # use global undo
-      # context.user_preferences.edit.use_global_undo = False
+      context.user_preferences.edit.use_global_undo = False
 
       # custom shape to bone
       customShapeToBone = bpy.context.window_manager.customShapeToBoneUI
@@ -193,10 +193,10 @@ class POSE_OT_custom_shape_to_bone(Operator):
 
       # report
       self.report({'WARNING'}, 'Must assign a custom bone shape!')
-    # finally:
-    #
-    #   # use global undo
-    #   context.user_preferences.edit.use_global_undo = useGlobalUndo
+    finally:
+
+      # use global undo
+      context.user_preferences.edit.use_global_undo = useGlobalUndo
 
     return {'FINISHED'}
 
@@ -369,11 +369,14 @@ class VIEW3D_PT_armature_data(Panel):  # TODO: Account for linked armatures.
     # layers
     column.prop(activeArmature.data, 'layers', text='')
 
-    # separator
-    column.separator()
+    # not display mode
+    if not armatureData.displayMode:
 
-    # layers
-    column.prop(activeBone, 'layers', text='')
+      # separator
+      column.separator()
+
+      # layers
+      column.prop(activeBone, 'layers', text='')
 
     # separator
     column.separator()
@@ -495,18 +498,15 @@ class VIEW3D_PT_armature_data(Panel):  # TODO: Account for linked armatures.
       # scale
       row.scale_y = 1.25
 
-      # deform option
-      if armatureData.deformOptions:
+      # sub
+      sub = row.row(align=True)
 
-        # icon
-        icon = 'RADIOBUT_ON'
-      else:
-
-        # icon
-        icon = 'RADIOBUT_OFF'
+      # scale
+      sub.scale_y = 1.25
+      sub.scale_x = 1.5
 
       # deform options
-      row.prop(armatureData, 'deformOptions', text='', icon=icon)
+      sub.prop(armatureData, 'deformOptions', text='', icon='RADIOBUT_ON' if armatureData.deformOptions else 'RADIOBUT_OFF')
 
       # use deform
       row.prop(activeBone, 'use_deform', text='Deform:', toggle=True)
@@ -664,18 +664,11 @@ def unregister():
   # unregister
   unregisterModule(__name__)
 
-  # try
-  try:
+  # delete armature data ui
+  del windowManager.armatureDataUI
 
-    # delete armature data ui
-    del windowManager.armatureDataUI
-
-    # delete custom shape to bone ui
-    del windowManager.customShapeToBoneUI
-
-  # except
-  except:
-    pass
+  # delete custom shape to bone ui
+  del windowManager.customShapeToBoneUI
 
 if __name__ in '__main__':
   register()
