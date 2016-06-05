@@ -99,115 +99,90 @@ class POSE_OT_custom_shape_to_bone(Operator):
     # separate name
     column.prop(option, 'separateName')
 
+  # main
+  def main(self, context, armature, active, pose):
+    '''
+      Operator main function.
+    '''
+
+    # optiovn
+    option = bpy.context.window_manager.customShapeToBoneUI
+
+    # custom shape transform
+    if pose.custom_shape_transform:
+
+      # target matrix
+      targetMatrix = armature.matrix_world * pose.custom_shape_transform.matrix
+
+    # custom shape transform
+    else:
+
+      # target matrix
+      targetMatrix = armature.matrix_world * active.matrix_local
+
+    # location
+    pose.custom_shape.location = targetMatrix.to_translation()
+
+    # rotation mode
+    pose.custom_shape.rotation_mode = 'XYZ'
+
+    # rotation euler
+    pose.custom_shape.rotation_euler = targetMatrix.to_euler()
+
+    # target scale
+    targetScale = targetMatrix.to_scale()
+
+    # scale average
+    scaleAverage = (targetScale[0] + targetScale[1] + targetScale[2]) / 3
+
+    # scale
+    pose.custom_shape.scale = ((active.length * scaleAverage), (active.length * scaleAverage), (active.length * scaleAverage))
+
+    # show wire
+    if option.showWire:
+      active.show_wire = True
+
+    # wire draw type
+    if option.wireDrawType:
+      pose.custom_shape.draw_type = 'WIRE'
+
+    # name custom shape
+    if option.nameCustomShape:
+      pose.custom_shape.name = pose.name
+
+      # add armature name
+      if option.addArmatureName:
+       pose.custom_shape.name = armature.name + option.separateName + pose.custom_shape.name
+
+      # assign name
+      pose.custom_shape.name = option.prefixShapeName + pose.custom_shape.name
+
+      # prefix shape data name
+      if option.prefixShapeDataName:
+        pose.custom_shape.data.name = option.prefixShapeName + pose.custom_shape.name
+
+      # prefix shape data name
+      else:
+        pose.custom_shape.data.name = pose.custom_shape.name
+
   # execute
   def execute(self, context):
     '''
       Execute the operator.
     '''
 
-    # use global undo
-    useGlobalUndo = context.user_preferences.edit.use_global_undo
-    try:
 
-      # use global undo
-      context.user_preferences.edit.use_global_undo = False
+    # custom shape
+    if context.active_pose_bone.custom_shape:
 
-      # custom shape to bone
-      customShapeToBone = bpy.context.window_manager.customShapeToBoneUI
+      # main
+      self.main(context, context.active_object, context.active_bone, context.active_pose_bone)
 
-      # active armature
-      activeArmature = bpy.context.active_object
-
-      # active bone
-      activeBone = bpy.context.active_bone
-
-      # active pose bone
-      activePoseBone = activeArmature.pose.bones[activeBone.name]
-
-      # custom shape
-      customShape = activePoseBone.custom_shape
-
-      # active armature matrix
-      activeArmatureMatrix = activeArmature.matrix_world
-
-      # custom shape transform
-      customShapeTransform = activePoseBone.custom_shape_transform
-      if customShapeTransform:
-
-        # custom shape transform matrix
-        customShapeTransformMatrix = customShapeTransform.matrix
-
-        # target matrix
-        targetMatrix = activeArmatureMatrix * customShapeTransformMatrix
-      else:
-
-        # active bone matrix
-        activeBoneMatrix = activeBone.matrix_local
-
-        # target matrix
-        targetMatrix = activeArmatureMatrix * activeBoneMatrix
-
-      # location
-      customShape.location = targetMatrix.to_translation()
-
-      # rotation mode
-      customShape.rotation_mode = 'XYZ'
-
-      # rotation euler
-      customShape.rotation_euler = targetMatrix.to_euler()
-
-      # target scale
-      targetScale = targetMatrix.to_scale()
-
-      # scale average
-      scaleAverage = (targetScale[0] + targetScale[1] + targetScale[2]) / 3
-
-      # scale
-      customShape.scale = ((activeBone.length * scaleAverage), (activeBone.length * scaleAverage), (activeBone.length * scaleAverage))
-
-      # show wire
-      if customShapeToBone.showWire:
-        activeBone.show_wire = True
-
-      # wire draw type
-      if customShapeToBone.wireDrawType:
-        customShape.draw_type = 'WIRE'
-
-      # name custom shape
-      if customShapeToBone.nameCustomShape:
-        customShapeName = activeBone.name
-
-        # add armature name
-        if customShapeToBone.addArmatureName:
-         customShapeName = activeArmature.name + customShapeToBone.separateName + customShapeName
-
-        # assign name
-        customShape.name = customShapeToBone.prefixShapeName + customShapeName
-
-        # prefix shape data name
-        if customShapeToBone.prefixShapeDataName:
-          customShape.data.name = customShapeToBone.prefixShapeName + customShapeName
-        else:
-          customShape.data.name = customShapeName
-    except (AttributeError, KeyError, TypeError):
-
-      # report
-      self.report({'WARNING'}, 'Must assign a custom bone shape!')
-    finally:
-
-      # use global undo
-      context.user_preferences.edit.use_global_undo = useGlobalUndo
+    # custom shape
+    else:
+      self.report({'INFO'}, 'Must assign a custom bone shape.')
 
     return {'FINISHED'}
-
-  # # invoke
-  # def invoke(self, context, event):
-  #   '''
-  #     Invoke the operator panel/menu, control its width.
-  #   '''
-  #
-  #   context.window_manager.invoke_props_dialog(self, width=220)
-  #   return {'RUNNING_MODAL'}
 
 # armature data property group
 class armatureData(PropertyGroup):
@@ -625,6 +600,13 @@ class VIEW3D_PT_armature_data(Panel):  # TODO: Account for linked armatures.
           # scale
           row.scale_y = 1.25
 
+# button
+def button(self, context):
+  '''
+    The custom shape to bone button
+  '''
+  self.layout.operator('pose.custom_shape_to_bone', icon='ALIGN')
+
 # Register
 def register():
   '''
@@ -648,6 +630,9 @@ def register():
 
   # custom shape to bone ui pointer property
   windowManager.customShapeToBoneUI = pointerProperty(type=customShapeToBone)
+
+  # button
+  bpy.types.BONE_PT_display.append(button)
 
   # Unregister
 def unregister():
