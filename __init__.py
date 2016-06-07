@@ -171,18 +171,10 @@ class POSE_OT_custom_shape_to_bone(Operator):
       Execute the operator.
     '''
 
-    # custom shape
-    if context.active_pose_bone.custom_shape:
-
-      # main
-      # self.main(context, context.active_object, context.active_bone, context.active_pose_bone)
-      pass
-
-    # custom shape
-    else:
-      self.report({'INFO'}, 'Must assign a custom bone shape.')
+    # do nothing
 
     return {'FINISHED'}
+
 
   def invoke(self, context, event):
     '''
@@ -191,11 +183,16 @@ class POSE_OT_custom_shape_to_bone(Operator):
 
     if event.alt:
       for bone in context.selected_pose_bones:
-        self.main(context, context.active_object, context.active_object.data.bones[bone.name], bone)
+        try:
+          self.main(context, context.active_object, context.active_object.data.bones[bone.name], bone)
+        except:
+          print('The bone \'' + bone.name + '\' did not have an assigned custom shape.')
 
     else:
-
+      try:
         self.main(context, context.active_object, context.active_bone, context.active_pose_bone)
+      except:
+        self.report({'INFO'}, 'Must assign a custom shape.')
 
     return self.execute(context)
 
