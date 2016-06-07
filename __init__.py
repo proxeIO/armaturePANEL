@@ -29,7 +29,7 @@
 bl_info = {
   'name': 'Armature Panel',
   'author': 'Trentin Frederick (proxe)',
-  'version': (0, 0, 9),
+  'version': (0, 1, 0),
   'blender': (2, 5, 0),
   'location': '3D View → Properties Panel → Armature',
   'description': 'Custom bone shape alignment and shortcut panel.',
@@ -175,13 +175,29 @@ class POSE_OT_custom_shape_to_bone(Operator):
     if context.active_pose_bone.custom_shape:
 
       # main
-      self.main(context, context.active_object, context.active_bone, context.active_pose_bone)
+      # self.main(context, context.active_object, context.active_bone, context.active_pose_bone)
+      pass
 
     # custom shape
     else:
       self.report({'INFO'}, 'Must assign a custom bone shape.')
 
     return {'FINISHED'}
+
+  def invoke(self, context, event):
+    '''
+      Invoke the operator
+    '''
+
+    if event.alt:
+      for bone in context.selected_pose_bones:
+        self.main(context, context.active_object, context.active_object.data.bones[bone.name], bone)
+
+    else:
+
+        self.main(context, context.active_object, context.active_bone, context.active_pose_bone)
+
+    return self.execute(context)
 
 # armature data property group
 class armatureData(PropertyGroup):
