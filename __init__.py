@@ -21,7 +21,7 @@
 #
 #  Author: Trentin Frederick (a.k.a, proxe)
 #  Contact: trentin.shaun.frederick@gmail.com
-#  Version: 0.0.8
+#  Version: 0.1.1
 #
 # ##### END INFO BLOCK #####
 
@@ -29,8 +29,8 @@
 bl_info = {
   'name': 'Armature Panel',
   'author': 'Trentin Frederick (proxe)',
-  'version': (0, 1, 0),
-  'blender': (2, 5, 0),
+  'version': (0, 1, 1),
+  'blender': (2, 60, 0),
   'location': '3D View → Properties Panel → Armature',
   'description': 'Custom bone shape alignment and shortcut panel.',
   'tracker_url': 'https://github.com/trentinfrederick/armature-data-panel/issues',
@@ -54,6 +54,55 @@ class POSE_OT_custom_shape_to_bone(Operator):
   bl_description = 'Align currently assigned custom bone shape on a visible scene layer to this bone.'
   bl_options = {'REGISTER', 'UNDO'}
 
+  # show wire
+  showWire = BoolProperty(
+    name='Draw Wire',
+    description='Turn on the bones draw wire option when the shape is aligned to the bone (Bone is always drawn as a wire-frame regardless of the view-port draw mode.)',
+    default=False
+  )
+
+  # wire draw type
+  wireDrawType = BoolProperty(
+    name='Wire Draw Type',
+    description='Change the custom shape object draw type to wire, when the shape is aligned to the bone.',
+    default=False
+  )
+
+  # name custom shape
+  nameCustomShape = BoolProperty(
+    name='Auto-Name',
+    description='Automatically name and prefix the custom shape based on the bone it is assigned to.',
+    default=False
+  )
+
+  # prefix shape name
+  prefixShapeName = StringProperty(
+    name='Prefix',
+    description='Use this prefix when naming a custom bone shape. (Erase if you do not wish to prefix the name.)',
+    default='WGT-'
+  )
+
+  # prefix shape data name
+  prefixShapeDataName = BoolProperty(
+    name='Prefix Shape Data Name',
+    description='Prefix the custom shape\'s object data name in addition to prefixing the custom shapes name.',
+    default=False
+  )
+
+  # add armature name
+  addArmatureName = BoolProperty(
+    name='Include Armature Name',
+    description='Include the armature name when renaming the custom shape.',
+    default=False
+  )
+
+  # separate name
+  separateName = StringProperty(
+    name='Separator',
+    description='Separate the name of the armature and the name of the bone with this character.',
+    default='_'
+  )
+
   # poll
   @classmethod
   def poll(cls, context):
@@ -75,38 +124,32 @@ class POSE_OT_custom_shape_to_bone(Operator):
     # column
     column = layout.column()
 
-    # option
-    option = context.window_manager.customShapeToBoneUI
-
     # show wire
-    column.prop(option, 'showWire', text='Wireframe')
+    column.prop(self, 'showWire', text='Wireframe')
 
     # wire draw type
-    column.prop(option, 'wireDrawType')
+    column.prop(self, 'wireDrawType')
 
     # separater
     column.separator()
 
     # name custom shape
-    column.prop(option, 'nameCustomShape', text='Auto Name')
+    column.prop(self, 'nameCustomShape', text='Auto Name')
 
     # prefix shape name
-    column.prop(option, 'prefixShapeName')
+    column.prop(self, 'prefixShapeName')
 
     # add armature name
-    column.prop(option, 'addArmatureName')
+    column.prop(self, 'addArmatureName')
 
     # separate name
-    column.prop(option, 'separateName')
+    column.prop(self, 'separateName')
 
   # main
   def main(self, context, armature, active, pose):
     '''
       Operator main function.
     '''
-
-    # optiovn
-    option = bpy.context.window_manager.customShapeToBoneUI
 
     # custom shape transform
     if pose.custom_shape_transform:
@@ -139,27 +182,27 @@ class POSE_OT_custom_shape_to_bone(Operator):
     pose.custom_shape.scale = ((active.length * scaleAverage), (active.length * scaleAverage), (active.length * scaleAverage))
 
     # show wire
-    if option.showWire:
+    if self.showWire:
       active.show_wire = True
 
     # wire draw type
-    if option.wireDrawType:
+    if self.wireDrawType:
       pose.custom_shape.draw_type = 'WIRE'
 
     # name custom shape
-    if option.nameCustomShape:
+    if self.nameCustomShape:
       pose.custom_shape.name = pose.name
 
       # add armature name
-      if option.addArmatureName:
-       pose.custom_shape.name = armature.name + option.separateName + pose.custom_shape.name
+      if self.addArmatureName:
+       pose.custom_shape.name = armature.name + self.separateName + pose.custom_shape.name
 
       # assign name
-      pose.custom_shape.name = option.prefixShapeName + pose.custom_shape.name
+      pose.custom_shape.name = self.prefixShapeName + pose.custom_shape.name
 
       # prefix shape data name
-      if option.prefixShapeDataName:
-        pose.custom_shape.data.name = option.prefixShapeName + pose.custom_shape.name
+      if self.prefixShapeDataName:
+        pose.custom_shape.data.name = self.prefixShapeName + pose.custom_shape.name
 
       # prefix shape data name
       else:
@@ -216,61 +259,6 @@ class armatureData(PropertyGroup):
     default = False
   )
 
-# custom shape to bone property group
-class customShapeToBone(PropertyGroup):
-  '''
-    Custom Shape to Bone property group.
-  '''
-
-  # show wire
-  showWire = BoolProperty(
-    name='Draw Wire',
-    description='Turn on the bones draw wire option when the shape is aligned to the bone (Bone is always drawn as a wire-frame regardless of the view-port draw mode.)',
-    default=False
-  )
-
-  # wire draw type
-  wireDrawType = BoolProperty(
-    name='Wire Draw Type',
-    description='Change the custom shape object draw type to wire, when the shape is aligned to the bone.',
-    default=False
-  )
-
-  # name custom shape
-  nameCustomShape = BoolProperty(
-    name='Auto-Name',
-    description='Automatically name and prefix the custom shape based on the bone it is assigned to.',
-    default=False
-  )
-
-  # prefix shape name
-  prefixShapeName = StringProperty(
-    name='Prefix',
-    description='Use this prefix when naming a custom bone shape. (Erase if you do not wish to prefix the name.)',
-    default='WGT-'
-  )
-
-  # prefix shape data name
-  prefixShapeDataName = BoolProperty(
-    name='Prefix Shape Data Name',
-    description='Prefix the custom shape\'s object data name in addition to prefixing the custom shapes name.',
-    default=False
-  )
-
-  # add armature name
-  addArmatureName = BoolProperty(
-    name='Include Armature Name',
-    description='Include the armature name when renaming the custom shape.',
-    default=False
-  )
-
-  # separate name
-  separateName = StringProperty(
-    name='Separator',
-    description='Separate the name of the armature and the name of the bone with this character.',
-    default='_'
-  )
-
 # armature data
 class VIEW3D_PT_armature_data(Panel):  # TODO: Account for linked armatures.
   '''
@@ -319,9 +307,6 @@ class VIEW3D_PT_armature_data(Panel):  # TODO: Account for linked armatures.
 
     # armature data
     armatureData = context.window_manager.armatureDataUI
-
-    # custom shape to bone
-    customShapeToBone = context.window_manager.customShapeToBoneUI
 
     # active armature
     activeArmature = context.active_object
@@ -640,9 +625,6 @@ def register():
   # armature data ui pointer property
   windowManager.armatureDataUI = pointerProperty(type=armatureData)
 
-  # custom shape to bone ui pointer property
-  windowManager.customShapeToBoneUI = pointerProperty(type=customShapeToBone)
-
   # button
   bpy.types.BONE_PT_display.append(button)
 
@@ -663,9 +645,6 @@ def unregister():
 
   # delete armature data ui
   del windowManager.armatureDataUI
-
-  # delete custom shape to bone ui
-  del windowManager.customShapeToBoneUI
 
 if __name__ in '__main__':
   register()
