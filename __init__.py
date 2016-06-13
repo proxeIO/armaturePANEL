@@ -29,7 +29,7 @@
 bl_info = {
   'name': 'Armature Panel',
   'author': 'Trentin Frederick (proxe)',
-  'version': (0, 1, 1),
+  'version': (0, 1, 0),
   'blender': (2, 60, 0),
   'location': '3D View → Properties Panel → Armature',
   'description': 'Custom bone shape alignment and shortcut panel.',
