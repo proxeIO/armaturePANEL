@@ -17,7 +17,7 @@ bl_info = {
     'name': 'Armature Panel',
     'author': 'Trentin Frederick (proxe)',
     'version': (0, 1, 0),
-    'blender': (2, 60, 0),
+    'blender': (2, 80, 0),
     'location': '3D View \N{Rightwards Arrow} Properties Panel \N{Rightwards Arrow} Armature',
     'description': 'Custom bone shape alignment and shortcut panel.',
     'tracker_url': 'https://github.com/trentinfrederick/armature-data-panel/issues',
