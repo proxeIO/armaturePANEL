@@ -26,6 +26,7 @@ bl_info = {
 
 # Imports
 import bpy
+from bpy.utils import register_class, unregister_class
 from bpy.types import Operator
 from mathutils import Matrix
 from bpy.types import PropertyGroup, Panel
@@ -42,49 +43,49 @@ class POSE_OT_custom_shape_to_bone(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     # show wire
-    showWire = BoolProperty(
+    showWire: BoolProperty(
         name='Draw Wire',
         description='Turn on the bones draw wire option when the shape is aligned to the bone (Bone is always drawn as a wire-frame regardless of the view-port draw mode.)',
         default=False
     )
 
     # wire draw type
-    wireDrawType = BoolProperty(
+    wireDrawType: BoolProperty(
         name='Wire Draw Type',
         description='Change the custom shape object draw type to wire, when the shape is aligned to the bone.',
         default=False
     )
 
     # name custom shape
-    nameCustomShape = BoolProperty(
+    nameCustomShape: BoolProperty(
         name='Auto-Name',
         description='Automatically name and prefix the custom shape based on the bone it is assigned to.',
         default=False
     )
 
     # prefix shape name
-    prefixShapeName = StringProperty(
+    prefixShapeName: StringProperty(
         name='Prefix',
         description='Use this prefix when naming a custom bone shape. (Erase if you do not wish to prefix the name.)',
         default='WGT-'
     )
 
     # prefix shape data name
-    prefixShapeDataName = BoolProperty(
+    prefixShapeDataName: BoolProperty(
         name='Prefix Shape Data Name',
         description='Prefix the custom shape\'s object data name in addition to prefixing the custom shapes name.',
         default=False
     )
 
     # add armature name
-    addArmatureName = BoolProperty(
+    addArmatureName: BoolProperty(
         name='Include Armature Name',
         description='Include the armature name when renaming the custom shape.',
         default=False
     )
 
     # separate name
-    separateName = StringProperty(
+    separateName: StringProperty(
         name='Separator',
         description='Separate the name of the armature and the name of the bone with this character.',
         default='_'
@@ -142,13 +143,13 @@ class POSE_OT_custom_shape_to_bone(Operator):
         if pose.custom_shape_transform:
 
             # target matrix
-            targetMatrix = armature.matrix_world * pose.custom_shape_transform.matrix
+            targetMatrix = armature.matrix_world @ pose.custom_shape_transform.matrix
 
         # custom shape transform
         else:
 
             # target matrix
-            targetMatrix = armature.matrix_world * active.matrix_local
+            targetMatrix = armature.matrix_world @ active.matrix_local
 
         # location
         pose.custom_shape.location = targetMatrix.to_translation()
@@ -174,7 +175,7 @@ class POSE_OT_custom_shape_to_bone(Operator):
 
         # wire draw type
         if self.wireDrawType:
-            pose.custom_shape.draw_type = 'WIRE'
+            pose.custom_shape.display_type = 'WIRE'
 
         # name custom shape
         if self.nameCustomShape:
@@ -213,16 +214,18 @@ class POSE_OT_custom_shape_to_bone(Operator):
 
         if event.alt:
             for bone in context.selected_pose_bones:
-                try:
-                    self.main(context, context.active_object, context.active_object.data.bones[bone.name], bone)
-                except:
-                    print('The bone \'' + bone.name + '\' did not have an assigned custom shape.')
+                self.main(context, context.active_object, context.active_object.data.bones[bone.name], bone)
+                # try:
+                #     self.main(context, context.active_object, context.active_object.data.bones[bone.name], bone)
+                # except:
+                #     print('The bone \'' + bone.name + '\' did not have an assigned custom shape.')
 
         else:
-            try:
-                self.main(context, context.active_object, context.active_bone, context.active_pose_bone)
-            except:
-                self.report({'INFO'}, 'Must assign a custom shape.')
+            self.main(context, context.active_object, context.active_bone, context.active_pose_bone)
+            # try:
+            #     self.main(context, context.active_object, context.active_bone, context.active_pose_bone)
+            # except:
+            #     self.report({'INFO'}, 'Must assign a custom shape.')
 
         return self.execute(context)
 
@@ -233,14 +236,14 @@ class armatureData(PropertyGroup):
     '''
 
     # display mode
-    displayMode = BoolProperty(
+    displayMode: BoolProperty(
         name = 'Display Mode',
         description = 'Use this to hide many of the options below that are generally needed while rigging. (Useful for animating.)',
         default=False
     )
 
     # deform options
-    deformOptions = BoolProperty(
+    deformOptions: BoolProperty(
         name = 'Deform Options',
         description = 'Display the deform options for this bone.',
         default = False
@@ -253,6 +256,7 @@ class VIEW3D_PT_armature_data(Panel):    # TODO: Account for linked armatures.
     '''
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
+    bl_category = 'Armature'
     bl_label = 'Armature'
 
     # poll
@@ -353,13 +357,13 @@ class VIEW3D_PT_armature_data(Panel):    # TODO: Account for linked armatures.
         # row.label(icon='BLANK1')
 
         # draw type
-        row.prop(activeArmature.data, 'draw_type', text='')
+        row.prop(activeArmature.data, 'display_type', text='')
 
         # row
         row = column.row(align=True)
 
         # show names
-        row.prop(activeArmature.data, 'show_names', text='Names', toggle=True)
+        row.prop(activeArmature.data, 'show_names', toggle=True)
 
         # show group colors
         row.prop(activeArmature.data, 'show_group_colors', text='Colors', toggle=True)
@@ -368,10 +372,10 @@ class VIEW3D_PT_armature_data(Panel):    # TODO: Account for linked armatures.
         row = column.row(align=True)
 
         # show axes
-        row.prop(activeArmature.data, 'show_axes', text='Axes', toggle=True)
+        row.prop(activeArmature.data, 'show_axes', toggle=True)
 
-        # show x-ray
-        row.prop(activeArmature, 'show_x_ray', text='X-Ray', toggle=True)
+        # show in front
+        row.prop(activeArmature, 'show_in_front', toggle=True)
 
         # pose mode
         if context.mode in 'POSE':
@@ -461,8 +465,7 @@ class VIEW3D_PT_armature_data(Panel):    # TODO: Account for linked armatures.
             sub = row.row(align=True)
 
             # scale
-            sub.scale_y = 1.25
-            sub.scale_x = 1.5
+            sub.scale_x = 1.25
 
             # deform options
             sub.prop(armatureData, 'deformOptions', text='', icon='RADIOBUT_ON' if armatureData.deformOptions else 'RADIOBUT_OFF')
@@ -518,20 +521,21 @@ class VIEW3D_PT_armature_data(Panel):    # TODO: Account for linked armatures.
                 # box
                 box = box.column(align=True)
 
-                # bbone segments
-                box.prop(activeBone, 'bbone_segments', text='Segments')
-
-                # box
-                box = box.column(align=True)
-
-                # bbone in
-                box.prop(activeBone, 'bbone_in', text='Ease In')
-
-                # box
-                box = box.column(align=True)
-
-                # bbone out
-                box.prop(activeBone, 'bbone_out', text='Ease Out')
+                #TODO: create bbone section
+                # # bbone segments
+                # box.prop(activeBone, 'bbone_segments', text='Segments')
+                #
+                # # box
+                # box = box.column(align=True)
+                #
+                # # bbone in
+                # box.prop(activeBone, 'bbone_in', text='Ease In')
+                #
+                # # box
+                # box = box.column(align=True)
+                #
+                # # bbone out
+                # box.prop(activeBone, 'bbone_out', text='Ease Out')
 
             # pose mode
             if context.mode in 'POSE':
@@ -555,7 +559,7 @@ class VIEW3D_PT_armature_data(Panel):    # TODO: Account for linked armatures.
                 row.prop(bpy.data.objects[activeArmature.name].pose.bones[activePoseBone.name], 'custom_shape', text='')
 
                 sub = row.row(align=True)
-                sub.operator('pose.custom_shape_to_bone', icon='ALIGN', text='')
+                sub.operator('pose.custom_shape_to_bone', icon='FULLSCREEN_EXIT', text='')
 
                 # row
                 row = column.row(align=True)
@@ -591,23 +595,26 @@ def button(self, context):
     '''
     self.layout.operator('pose.custom_shape_to_bone', icon='ALIGN')
 
+classes = [
+    POSE_OT_custom_shape_to_bone,
+    armatureData,
+    VIEW3D_PT_armature_data,]
+
 # Register
 def register():
     '''
         Register
     '''
 
-    # register module
-    registerModule = bpy.utils.register_module
+    # register classes
+    for cls in classes:
+        register_class(cls)
 
     # window manager
     windowManager = bpy.types.WindowManager
 
     # pointer property
     pointerProperty = bpy.props.PointerProperty
-
-    # register
-    registerModule(__name__)
 
     # armature data ui pointer property
     windowManager.armatureDataUI = pointerProperty(type=armatureData)
@@ -621,14 +628,12 @@ def unregister():
         Unregister
     '''
 
-    # unregister module
-    unregisterModule = bpy.utils.unregister_module
+    # unregister classes
+    for cls in classes:
+        unregister_class(cls)
 
     # window manager
     windowManager = bpy.types.WindowManager
-
-    # unregister
-    unregisterModule(__name__)
 
     # delete armature data ui
     del windowManager.armatureDataUI
