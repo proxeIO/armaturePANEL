@@ -593,7 +593,7 @@ def button(self, context):
     '''
         The custom shape to bone button
     '''
-    self.layout.operator('pose.custom_shape_to_bone', icon='ALIGN')
+    self.layout.operator('pose.custom_shape_to_bone', icon='UV_SYNC_SELECT')
 
 classes = [
     POSE_OT_custom_shape_to_bone,
